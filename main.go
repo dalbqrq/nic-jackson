@@ -31,17 +31,12 @@ func main() {
 	l := log.New(os.Stdout, "product-api ", log.LstdFlags)
 	hh := handlers.NewHello(l)
 	gh := handlers.NewGoodbye(l)
-
-	// Opcionalmente poderia registrar a funcao diretamente
-	// http.HandleFunc("/ok", hh.ServeHTTP)
-	// http.ListenAndServe(":9090", hh)
+	ph := handlers.NewProduct(l)
 
 	sm := http.NewServeMux()
 	sm.Handle("/hello", hh)
 	sm.Handle("/goodbye", gh)
-
-	// Podemos criar o servico diretamente ou configura-lo como abaixo
-	//http.ListenAndServe(":9090", sm)
+	sm.Handle("/product", ph)
 
 	s := &http.Server{
 		Addr:         cfg.Hostname + ":" + cfg.Port,
