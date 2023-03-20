@@ -2,16 +2,32 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/caarlos0/env"
 	"github.com/dalbqrq/nic-jackson/handlers"
 )
 
+type config struct {
+	Env      string `env:"ENV" envDefault:"dev"`
+	Hostname string `env:"HOSTNAME" envDefault:"localhost"`
+	Port     string `env:"PORT" envDefault:"9090"`
+}
+
 func main() {
+
+	cfg := config{}
+	err := env.Parse(&cfg)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+	}
+	fmt.Printf("%+v\n", cfg)
+
 	l := log.New(os.Stdout, "product-api ", log.LstdFlags)
 	hh := handlers.NewHello(l)
 	gh := handlers.NewGoodbye(l)
@@ -28,7 +44,7 @@ func main() {
 	//http.ListenAndServe(":9090", sm)
 
 	s := &http.Server{
-		Addr:         ":9090",
+		Addr:         cfg.Hostname + ":" + cfg.Port,
 		Handler:      sm,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
