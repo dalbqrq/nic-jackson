@@ -36,7 +36,7 @@ func main() {
 	sm := http.NewServeMux()
 	sm.Handle("/hello", hh)
 	sm.Handle("/goodbye", gh)
-	sm.Handle("/product", ph)
+	sm.Handle("/", ph)
 
 	s := &http.Server{
 		Addr:         cfg.Hostname + ":" + cfg.Port,
