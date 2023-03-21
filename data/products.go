@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+var (
+	ErrProductNotFound = fmt.Errorf("Product not found")
+)
+
 type Product struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
@@ -19,6 +23,29 @@ type Product struct {
 }
 
 type Products []*Product
+
+// static product list (database)
+var productList = []*Product{
+	&Product{
+		ID:          1,
+		Name:        "Latte",
+		Description: "Frothy milky coffee",
+		Price:       2.45,
+		SKU:         "abc229",
+		CreatedOn:   time.Now().UTC().String(),
+		UpdatedOn:   time.Now().UTC().String(),
+	},
+	&Product{
+		ID:          2,
+		Name:        "Expresso",
+		Description: "Short and strong coffee without milk",
+		Price:       1.99,
+		SKU:         "jkj889",
+		CreatedOn:   time.Now().UTC().String(),
+		UpdatedOn:   time.Now().UTC().String(),
+	},
+}
+
 
 func (p *Products) ToJSON(w io.Writer) error {
 	e := json.NewEncoder(w)
@@ -36,7 +63,7 @@ func AddProduct(p *Product) {
 }
 
 func UpdateProduct(id int, p *Product) error {
-	p, pos, err := findProduct(id)
+	_, pos, err := findProduct(id)
 	if err != nil {
 		return err
 	}
@@ -46,13 +73,10 @@ func UpdateProduct(id int, p *Product) error {
 	return nil
 }
 
-var ErrProductNotFound = fmt.Errorf("Product not found")
-
 func findProduct(id int) (*Product, int, error) {
-
 	for i, p := range productList {
-		if p.ID == i {
-			return p, id, nil
+		if p.ID == id {
+			return p, i, nil
 		}
 	}
 
@@ -66,25 +90,4 @@ func getNextID() int {
 
 func GetProducts() Products {
 	return productList
-}
-
-var productList = []*Product{
-	&Product{
-		ID:          1,
-		Name:        "Latte",
-		Description: "Frothy milky coffee",
-		Price:       2.45,
-		SKU:         "abc229",
-		CreatedOn:   time.Now().UTC().String(),
-		UpdatedOn:   time.Now().UTC().String(),
-	},
-	&Product{
-		ID:          2,
-		Name:        "Esspresso",
-		Description: "Short and strong coffee without milk",
-		Price:       1.99,
-		SKU:         "jkj889",
-		CreatedOn:   time.Now().UTC().String(),
-		UpdatedOn:   time.Now().UTC().String(),
-	},
 }

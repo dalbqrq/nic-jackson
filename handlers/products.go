@@ -10,7 +10,7 @@ import (
 )
 
 type Products struct {
-	l *log.Logger
+	log *log.Logger
 }
 
 func NewProduct(l *log.Logger) *Products {
@@ -20,34 +20,34 @@ func NewProduct(l *log.Logger) *Products {
 func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// handle get
 	if r.Method == http.MethodGet {
-		p.l.Println("GET", r.URL.Path)
+		p.log.Println("GET", r.URL.Path)
 		p.getProducts(rw, r)
 		return
 	}
 
 	// handle post
 	if r.Method == http.MethodPost {
-		p.l.Println("POST", r.URL.Path)
+		p.log.Println("POST", r.URL.Path)
 		p.postProducts(rw, r)
 		return
 	}
 
 	// handle put
 	if r.Method == http.MethodPut {
-		p.l.Println("PUT", r.URL.Path)
+		p.log.Println("PUT", r.URL.Path)
 
 		// expect id in the URI
 		re := regexp.MustCompile(`/([0-9]+)`)
 		g := re.FindAllStringSubmatch(r.URL.Path, -1)
 
 		if len(g) != 1 {
-			p.l.Println("Invalid URI more than one id", g)
+			p.log.Println("Invalid URI more than one id", g)
 			http.Error(rw, "Invalid URI", http.StatusBadRequest)
 			return
 		}
 
 		if len(g[0]) != 2 {
-			p.l.Println("Invalid URI more than one capture group")
+			p.log.Println("Invalid URI more than one capture group")
 			http.Error(rw, "Invalid URI", http.StatusBadRequest)
 			return
 		}
@@ -59,7 +59,7 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		p.l.Println("Got ID:", id)
+		p.log.Println("Got ID:", id)
 		p.putProducts(id, rw, r)
 		return
 	}
@@ -69,44 +69,41 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle GET Products")
+	p.log.Println("Handle GET Products")
 
-	// fetch the products from the datastore
-	lp := data.GetProducts()
-
-	// serialize the list to JSON
-	err := lp.ToJSON(rw)
+	prod := data.GetProducts()
+	err := prod.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to marshal json", http.StatusInternalServerError)
 	}
 }
 
-func (pl *Products) postProducts(rw http.ResponseWriter, r *http.Request) {
-	pl.l.Println("Handle POST Products")
+func (p *Products) postProducts(rw http.ResponseWriter, r *http.Request) {
+	p.log.Println("Handle POST Products")
 
-	p := &data.Product{}
-	err := p.FromJSON(r.Body)
+	prod := &data.Product{}
+	err := prod.FromJSON(r.Body)
 	if err != nil {
 		http.Error(rw, "Unable to unmarshal json", http.StatusInternalServerError)
 	}
 
-	pl.l.Printf("Prod: %#v", p)
+	p.log.Printf("Prod: %#v", prod)
 
-	data.AddProduct(p)
+	data.AddProduct(prod)
 }
 
-func (pl *Products) putProducts(id int, rw http.ResponseWriter, r *http.Request) {
-	pl.l.Println("Handle PUT Products")
+func (p *Products) putProducts(id int, rw http.ResponseWriter, r *http.Request) {
+	p.log.Println("Handle PUT Products")
 
-	p := &data.Product{}
-	err := p.FromJSON(r.Body)
+	prod := &data.Product{}
+	err := prod.FromJSON(r.Body)
 	if err != nil {
 		http.Error(rw, "Unable to unmarshal json", http.StatusInternalServerError)
 	}
 
-	pl.l.Printf("Prod: %#v", p)
+	p.log.Printf("Prod: %#v", prod)
 
-	err = data.UpdateProduct(id, p)
+	err = data.UpdateProduct(id, prod)
 	if err == data.ErrProductNotFound {
 		http.Error(rw, "Product not found", http.StatusInternalServerError)
 		return
